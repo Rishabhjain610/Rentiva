@@ -1,14 +1,31 @@
 'use client'
 import React,{useState} from 'react'
-import { ArrowLeft, User, Mail, Lock, LogIn,EyeOff,Eye } from "lucide-react"
+import { ArrowLeft, User, Mail, Lock, LogIn,EyeOff,Eye, Loader2 } from "lucide-react"
 import { motion } from "motion/react"
 import Link from 'next/link'
-
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
 const RegisterForm = ({ onBack }: { onBack?: () => void }) => {
   const [name,setname] = useState('')
   const [email,setemail] = useState('')
   const [password,setpassword] = useState('')
   const [passwordVisible,setpasswordVisible] = useState(false)
+  const [loading,setloading] = useState(false)
+  const router = useRouter();
+  const handleRegister=async(e: React.FormEvent) =>{
+    e.preventDefault();
+    setloading(true)
+    try {
+      const result=await axios.post('/api/auth/register',{name,email,password})
+      console.log(result.data)
+      setloading(false)
+      router.push('/')
+      
+    } catch (error) {
+      console.error('Registration error:', error)
+      setloading(false)
+    }
+  }
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-green-50 via-white to-green-100 relative">
       
@@ -30,6 +47,7 @@ const RegisterForm = ({ onBack }: { onBack?: () => void }) => {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-sm bg-white/90 p-8 rounded-xl shadow-xl space-y-6 border border-green-100"
+        onSubmit={handleRegister}
       >
         <div className="flex flex-col items-center mb-2">
           <motion.div
@@ -96,13 +114,14 @@ const RegisterForm = ({ onBack }: { onBack?: () => void }) => {
         </div>
         <button
           type="submit"
-          className={`${email.length === 0 || password.length === 0 || name.length === 0 ? 'opacity-50 cursor-not-allowed' : ''} w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-md transition shadow`}
+          className={`${email.length === 0 || password.length === 0 || name.length === 0 ? 'opacity-50 cursor-not-allowed' : ''} w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-md transition shadow flex items-center justify-center `}
         >
-          Register
+          {loading?<Loader2 className="mx-3 animate-spin"/>:<></>}
+          {loading ? 'Registering...' : 'Register'}
         </button>
         <p className="text-center text-sm text-gray-500 mt-2">
           Already have an account?{' '}
-          <Link href="/login" className="text-green-600 hover:underline font-medium">Login</Link>
+          <p onClick={() => router.push('/login')} className="text-green-600 hover:underline font-medium cursor-pointer">Login</p>
         </p>
       </motion.form>
     </div>

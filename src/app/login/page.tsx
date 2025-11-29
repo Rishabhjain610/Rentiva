@@ -1,15 +1,40 @@
 'use client'
 import React, { useState } from 'react'
 import { motion } from "motion/react"
-import { Mail, Lock, LogIn, Eye, EyeOff } from "lucide-react"
-
+import { Mail, Lock, LogIn, Eye, EyeOff,Loader2,ArrowLeft } from "lucide-react"
+import { useRouter } from 'next/navigation'
+import axios from 'axios'
+import { signIn } from 'next-auth/react'
 const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordVisible, setPasswordVisible] = useState(false)
-
+  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const handleLogin=async(e:React.FormEvent)=>{
+    e.preventDefault();
+    setLoading(true)
+    try {
+      await signIn('credentials',{redirect:false,email,password})
+      
+    } catch (error) {
+      console.error('Login error:', error)
+      setLoading(false)
+    }
+  }
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-green-50 via-white to-green-100">
+      <motion.button
+        type="button"
+        onClick={() => router.back()}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+        className="absolute top-6 left-6 flex items-center gap-2 py-2 px-4 rounded-md border border-green-200 bg-white/80 text-green-600 hover:bg-green-100 shadow transition"
+      >
+        <ArrowLeft size={18} />
+        Back
+      </motion.button>
       <motion.form
         initial={{ opacity: 0, scale: 0.97, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -71,13 +96,14 @@ const LoginForm = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-md transition shadow"
+          className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-md transition shadow flex items-center justify-center "
         >
-          Login
+          {loading ? <Loader2 className="mx-3 animate-spin"/> : <></>}
+          {loading ? 'Logging in...' : 'Login'}
         </button>
         <p className="text-center text-sm text-gray-500 mt-2">
           Don't have an account?{' '}
-          <a href="/register" className="text-green-600 hover:underline font-medium">Register</a>
+          <p onClick={() => router.push('/register')} className="text-green-600 hover:underline font-medium cursor-pointer">Register</p>
         </p>
       </motion.form>
     </div>
